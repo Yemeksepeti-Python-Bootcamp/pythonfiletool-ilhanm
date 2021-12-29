@@ -6,14 +6,21 @@ class FileTool:
     
     def __init__(self,path,fields=[]):
         self.path=path
-        self.fields=fields        
+        if fields==[]: self.setHeaders() 
+        else: self.fields=fields
+        self.csvToList()
+
+    def setHeaders(self):      
+        self.file=open(self.path,"r+")
+        csv_reader = list(csv.reader(self.file, delimiter=','))        
+        self.fields=csv_reader[0]
         
     def csvToList(self):
         """
         Transfer csv row elements to a python iterable object.
         """
         self.file=open(self.path,"r+")
-        csv_reader = list(csv.reader(self.file, delimiter=','))
+        csv_reader = list(csv.reader(self.file, delimiter=','))        
         for row in csv_reader[1:]:
             self.elemlist.append(row)
     
@@ -22,10 +29,9 @@ class FileTool:
         Reads all rows of given file.
         """
         f=open(self.path,"r")
-        for row in f.readlines():
-            print(row)
-    
-
+        for id,row in enumerate(f.readlines()):
+            print(f"ID:{id} | {row}")
+  
     def readRange(self,start :int,end :int):
         """
         Reads part of the given file.
@@ -33,8 +39,10 @@ class FileTool:
         end: last row to read\n
         """
         f=open(self.path,"r")
+        i=0
         for row in f.readlines()[start:end+1]:            
-            print(row)
+            print(f"ID:{start+i} | {row}")
+            i+=1
 
     def addNewRow(self, element):
         """
@@ -59,12 +67,22 @@ class FileTool:
         lines=f.readlines()
         if rowId==-1:
             lines.pop() #if row id is not specified , then remove last row.
-        else: 
+        else:
+            print(f"{rowId} id numaralı {lines[rowId]} silindi")
             lines.pop(rowId)
         f=open(self.path,"w+")
         f.writelines(lines)
 
+    def editRow(self,rowId: int, newData):
+        """
+        Edit data by RowId
+        To change specific row, pass rowId as argument\n        
+        """
+        f=open(self.path,"r+")
+        lines=f.readlines()
+        self.deleteRow(rowId)
 
+        
 
 
         
