@@ -1,49 +1,68 @@
-from io import TextIOWrapper
-from os import path
+import csv
+import json
+
 class FileTool:
-    def __init__(self,path,fields):
+    elemlist=[]
+    
+    def __init__(self,path,fields=[]):
         self.path=path
-        self.fields=fields
+        self.fields=fields        
+        
+    def csvToList(self):
+        """
+        Transfer csv row elements to a python iterable object.
+        """
+        self.file=open(self.path,"r+")
+        csv_reader = list(csv.reader(self.file, delimiter=','))
+        for row in csv_reader[1:]:
+            self.elemlist.append(row)
     
-    def openFile(self,appendMode=False):
+    def readAll(self):
         """
-        FileTool Method
-        openFile(appendMode: bool) \n
-        When appendMode=True, file opens in a+ mode, 
-        appendMode=False, file opens in r+ mode.
+        Reads all rows of given file.
         """
-        mod=""
-        if path.exists(self.path):
-            mod="a+" if appendMode==True else "r+"
-        else:
-            mod="w+"
-        return open(self.path,mod)
-
-    def readAll(self, file :TextIOWrapper):
-        """
-        Takes "file" as argument:  \n
-        Arg. Type: TextIOWrapper \n
-        You can give returned value from openFile as an argument.
-        """
-        for row in file.readlines():
+        f=open(self.path,"r")
+        for row in f.readlines():
             print(row)
-        print("\n")
-        file.seek(0)
     
-    def readRange(self,file :TextIOWrapper,start :int,end :int):
+
+    def readRange(self,start :int,end :int):
         """
-        First Argument is an opened file :TextIOWrapper\n
-        start: first row to read
-        end: last row to read
+        Reads part of the given file.
+        start: first row to read\n
+        end: last row to read\n
         """
-        for row in file.readlines()[start:end+1]:
+        f=open(self.path,"r")
+        for row in f.readlines()[start:end+1]:            
             print(row)
 
-        
-        
+    def addNewRow(self, element):
+        """
+        Adds new row to file with dict or list type.\n
+        Iterable argument, list or dict type accepted
+        """
+        f=open(self.path,'a', newline='\n')
+        if(isinstance(element,dict)): #add new row by using dict data type
+            _dictwriter=csv.DictWriter(f,self.fields)
+            _dictwriter.writerow(element)
+        if(isinstance(element,list)): #add new row by using list data type
+            _writer=csv.writer(f)
+            _writer.writerow(element)
 
-
-
+    def deleteRow(self,rowId=-1):
+        """
+        Delete Row, optionally by id
+        To remove specific row, pass rowId as argument\n
+        If row id is not specified, last row will be deleted.
+        """
+        f=open(self.path,"r+")
+        lines=f.readlines()
+        if rowId==-1:
+            lines.pop() #if row id is not specified , then remove last row.
+        else: 
+            lines.pop(rowId)
+        f=open(self.path,"w+")
+        f.writelines(lines)
 
 
 

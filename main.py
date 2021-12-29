@@ -1,7 +1,11 @@
 from FileTool import FileTool
-ftObj=FileTool("dosya.csv",["isim","soyisim","numara"])
 
-myfile=ftObj.openFile()
+myft=FileTool("dosya.csv",["name","price","quantity"])
 
-#ftObj.readAll(myfile)
-ftObj.readRange(myfile,1,3)
+
+#myft.addNewRow(["yeni","122","25"])
+print("----")
+#myft.addNewRow({"name":"webcam2","price":300,"quantity":11})
+#myft.readAll()
+myft.deleteRow()
+myft.readRange(5,10)
