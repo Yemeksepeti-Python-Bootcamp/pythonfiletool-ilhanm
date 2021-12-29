@@ -3,9 +3,13 @@ from FileTool import FileTool
 myft=FileTool("dosya.csv")
 
 
-#myft.addNewRow(["yeni",122,25])
+#myft.addNewRow(["listeOlarakEklendi",230,11])
 print("----")
-#myft.addNewRow({"name":"webcam2","price":300,"quantity":11})
+#myft.addNewRow({"name":"dictten eklendi","price":1200,"quantity":21})
+#print(myft.elemlist)
+
+myft.editRow(3)
+
 #myft.readAll()
-print(myft.fields)
+
 #print(myft.elemlist)

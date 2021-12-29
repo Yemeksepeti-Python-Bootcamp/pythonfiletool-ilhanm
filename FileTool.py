@@ -3,6 +3,7 @@ import json
 
 class FileTool:
     elemlist=[]
+    isFileHasHeaders=True #inserting,deleting depends on whether csv file has headers by default or not
     
     def __init__(self,path,fields=[]):
         self.path=path
@@ -40,9 +41,8 @@ class FileTool:
         """
         f=open(self.path,"r")
         i=0
-        for row in f.readlines()[start:end+1]:            
+        for i,row in enumerate(f.readlines()[start:end+1]):            
             print(f"ID:{start+i} | {row}")
-            i+=1
 
     def addNewRow(self, element):
         """
@@ -53,9 +53,11 @@ class FileTool:
         if(isinstance(element,dict)): #add new row by using dict data type
             _dictwriter=csv.DictWriter(f,self.fields)
             _dictwriter.writerow(element)
+            self.elemlist.append(list(element.values())) #append values of dict type input to general list
         if(isinstance(element,list)): #add new row by using list data type
             _writer=csv.writer(f)
             _writer.writerow(element)
+            self.elemlist.append(element)
 
     def deleteRow(self,rowId=-1):
         """
@@ -67,22 +69,31 @@ class FileTool:
         lines=f.readlines()
         if rowId==-1:
             lines.pop() #if row id is not specified , then remove last row.
+            self.elemlist.pop()
         else:
             print(f"{rowId} id numaralı {lines[rowId]} silindi")
             lines.pop(rowId)
+            self.elemlist.pop(rowId-1)
         f=open(self.path,"w+")
         f.writelines(lines)
 
-    def editRow(self,rowId: int, newData):
+    def editRow(self,rowId: int):
         """
         Edit data by RowId
         To change specific row, pass rowId as argument\n        
         """
-        f=open(self.path,"r+")
-        lines=f.readlines()
-        self.deleteRow(rowId)
+        _new=[]
+        for i,field in enumerate(self.fields):
+            _new.append(input(f"{field} icin yeni degeri giriniz:"))
+        self.elemlist.insert(rowId,_new)
+        self.saveChanges()
 
-        
+    def saveChanges(self):
+        f=open(self.path,'w', newline='\n',encoding="UTF-8")
+        _writer=csv.writer(f)
+        _writer.writerow(self.fields)
+        _writer.writerows(self.elemlist)
+
 
 
         
