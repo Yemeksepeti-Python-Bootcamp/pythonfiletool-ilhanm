@@ -1,63 +1,81 @@
 import csv
 import json
 
-class FileTool:
-    elemlist=[]
-    isFileHasHeaders=True #inserting,deleting depends on whether csv file has headers by default or not
+class FileTool:    
+    id=0
+    idList=[]    
+    elemDict=[]
+    hasDefaultHeaders=True #inserting,deleting depends on whether csv file has headers by default or not
     
     def __init__(self,path,fields=[]):
         self.path=path
-        if fields==[]: self.setHeaders() 
-        else: self.fields=fields
-        self.csvToList()
+        if fields==[]:
+            self.setHeaders()
+        else:
+            self.fields=fields
+        self.csvToDict()
 
     def setHeaders(self):      
         self.file=open(self.path,"r+")
         csv_reader = list(csv.reader(self.file, delimiter=','))        
         self.fields=csv_reader[0]
         
-    def csvToList(self):
+    def csvToDict(self):
         """
         Transfer csv row elements to a python iterable object.
-        """
-        self.file=open(self.path,"r+")
+        """        
+        elemlist=[]
+        self.file=open(self.path,"r+",encoding="UTF-8")
         csv_reader = list(csv.reader(self.file, delimiter=','))        
         for row in csv_reader[1:]:
-            self.elemlist.append(row)
+            elemlist.append(row)
+            self.idList.append(self.id)
+            self.id=self.id+1
+        self.elemDict=dict(zip(self.idList,elemlist))
     
-    def readAll(self):
+    def getAll(self):
         """
         Reads all rows of given file.
         """
-        f=open(self.path,"r")
-        for id,row in enumerate(f.readlines()):
-            print(f"ID:{id} | {row}")
+        for id, element in self.elemDict.items():
+            print(f"ID: {id} | {element}")
   
-    def readRange(self,start :int,end :int):
+    def getRange(self,start :int,end :int):
         """
         Reads part of the given file.
         start: first row to read\n
         end: last row to read\n
         """
-        f=open(self.path,"r")
-        i=0
-        for i,row in enumerate(f.readlines()[start:end+1]):            
-            print(f"ID:{start+i} | {row}")
+        for id, element in list(self.elemDict.items())[start:end+1]:
+            print(f"ID: {id} | {element}")
 
-    def addNewRow(self, element):
+    def getByID(self,rowID):
+        print(f"ID: {rowID} | {self.elemDict[rowID]}")
+
+    def addRow(self, element):
         """
         Adds new row to file with dict or list type.\n
         Iterable argument, list or dict type accepted
-        """
-        f=open(self.path,'a', newline='\n')
-        if(isinstance(element,dict)): #add new row by using dict data type
-            _dictwriter=csv.DictWriter(f,self.fields)
-            _dictwriter.writerow(element)
-            self.elemlist.append(list(element.values())) #append values of dict type input to general list
+        """        
+        if(isinstance(element,dict)): #add new row by using dict data type            
+            self.elemDict[self.id]=list(element.values())
+            self.idList.append(self.id)
+            self.id+=1
+            
         if(isinstance(element,list)): #add new row by using list data type
-            _writer=csv.writer(f)
-            _writer.writerow(element)
-            self.elemlist.append(element)
+            self.elemDict[self.id]=element
+            self.idList.append(self.id)
+            self.id+=1
+        self.saveChanges()
+
+    def addMultiple(self,elems):
+        if(isinstance(elems,list)): #add new row by using list data type
+            for newElement in elems:
+                self.elemDict[self.id]=newElement
+                self.idList.append(self.id)
+                self.id+=1
+            self.saveChanges()
+    
 
     def deleteRow(self,rowId=-1):
         """
@@ -65,35 +83,102 @@ class FileTool:
         To remove specific row, pass rowId as argument\n
         If row id is not specified, last row will be deleted.
         """
-        f=open(self.path,"r+")
-        lines=f.readlines()
-        if rowId==-1:
-            lines.pop() #if row id is not specified , then remove last row.
-            self.elemlist.pop()
-        else:
-            print(f"{rowId} id numaralı {lines[rowId]} silindi")
-            lines.pop(rowId)
-            self.elemlist.pop(rowId-1)
-        f=open(self.path,"w+")
-        f.writelines(lines)
-
-    def editRow(self,rowId: int):
-        """
-        Edit data by RowId
-        To change specific row, pass rowId as argument\n        
-        """
-        _new=[]
-        for i,field in enumerate(self.fields):
-            _new.append(input(f"{field} icin yeni degeri giriniz:"))
-        self.elemlist.insert(rowId,_new)
+        if(rowId==-1): 
+            self.elemDict.popitem()
+            self.idList.pop()
+        else: 
+            del self.elemDict[rowId]
+            self.idList.pop(rowId)
         self.saveChanges()
+
+    def updateByID(self,rowId: int, newElement):
+        """
+        Update data by RowId\n
+        rowId is the item id that you want to change \n
+        newElement is changed version of this row which is DICT or LIST type.        
+        """       
+        
+        if(isinstance(newElement,dict)):
+            self.elemDict[rowId]=list(newElement.values())
+            self.saveChanges()
+        if(isinstance(newElement,list)): 
+            self.elemDict[rowId]=newElement
+            self.saveChanges()
 
     def saveChanges(self):
         f=open(self.path,'w', newline='\n',encoding="UTF-8")
         _writer=csv.writer(f)
         _writer.writerow(self.fields)
-        _writer.writerows(self.elemlist)
+        _writer.writerows(list(self.elemDict.values()))
 
-
-
+    def getMenu(self):
         
+        mainMenu="""
+        FILE OPERATIONS MENU
+        [1]Reading
+        [2]Adding
+        [3]Updating
+        [4]Deleting
+        [5]Save as JSON
+        [6]Merge Another File
+        [7]Quit
+        """
+        while(1):
+            print(mainMenu)            
+            choice= int(input("Choose an operation [1-7]: "))
+            if choice==7: break
+            elif 0<choice<7: self.MenuOperations(choice)
+            else: print("unvalid choice, please enter value between 1-7\n")            
+              
+    def MenuOperations(self,choice):
+        newElement=[] 
+        if choice==1:
+            self.getAll()
+        if choice ==2:                   
+            for field in self.fields:
+                newElement.append(input(f"Enter a value to set '{field}' field: "))                         
+            self.addRow(newElement)
+        if choice ==3:
+            rowID=int(input("ID That You Want To Change: "))            
+            newElement=[]
+            print(f"Item that you want to change is: {self.elemDict[rowID]}")
+            for field in self.fields:
+                newElement.append(input(f"Enter a value to set '{field}' field: "))
+            self.updateByID(rowID,newElement)
+            self.saveChanges()
+        if choice ==4:
+            rowID=int(input("ID That You Want To Delete: "))
+            self.deleteRow(rowID)
+        if choice ==5: #to JSON
+            self.ConvertJSON()
+        if choice ==6:
+            newFilePath=input("Enter your full file path with '.csv' or '.json' : ")
+            self.mergeAnotherFile(newFilePath)
+    
+    def ConvertJSON(self):
+        productDetails={}
+        jsonResult={}
+        myid=0
+        for pdInfo in self.elemDict.values():
+            for i,field in enumerate(self.fields):                
+                productDetails[f"{field}"]=pdInfo[i]
+            jsonResult[f"{myid}"]=productDetails.copy()
+            myid=myid+1
+
+        #print(jsonResult)
+        result=json.dumps(jsonResult,indent=4)
+        with open("output.json", "w", encoding="utf8") as outfile:
+            outfile.write(result)  
+        
+    def mergeAnotherFile(self,path :str):        
+        
+        if path.endswith('csv'):
+            try:
+                file=open(path,"r+",encoding="UTF-8")
+                csv_reader = list(csv.reader(file, delimiter=','))
+                self.addMultiple(csv_reader)
+                print(f"{path} file successfully combined with {self.path}")
+            except:
+                print("file not found or unexpected content")
+        else:
+            print("unvalid file type")

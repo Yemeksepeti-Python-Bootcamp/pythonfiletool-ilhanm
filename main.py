@@ -1,15 +1,11 @@
-from FileTool2 import FileTool2
+from FileTool import FileTool
+myft=FileTool("products.csv",["name","price","quantity"])
 
-myft=FileTool2("dosya.csv")
 
+#myft.addRow({"name":"Playstation 5","price":855,"quantity":12})
+#myft.addRow(["mikrofon",12,23])
+#myft.deleteRow(5)
+#myft.getAll()
+#myft.mergeAnotherFile("yeniUrunler.csv")
 
-#myft.addNewRow(["listeOlarakEklendi",230,11])
-print("----")
-#myft.addNewRow({"name":"dictten eklendi","price":1200,"quantity":21})
-#print(myft.elemlist)
-
-#myft.getRange(7,11)
-
-#myft.readAll()
-
-#print(myft.elemlist)
+myft.getMenu()
