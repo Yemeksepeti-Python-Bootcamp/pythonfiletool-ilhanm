@@ -5,7 +5,6 @@ class FileTool:
     id=0
     idList=[]    
     elemDict=[]
-    hasDefaultHeaders=True #inserting,deleting depends on whether csv file has headers by default or not
     
     def __init__(self,path,fields=[]):
         self.path=path
@@ -71,11 +70,8 @@ class FileTool:
     def addMultiple(self,elems):
         if(isinstance(elems,list)): #add new row by using list data type
             for newElement in elems:
-                self.elemDict[self.id]=newElement
-                self.idList.append(self.id)
-                self.id+=1
+                self.addRow(newElement)
             self.saveChanges()
-    
 
     def deleteRow(self,rowId=-1):
         """
@@ -180,5 +176,14 @@ class FileTool:
                 print(f"{path} file successfully combined with {self.path}")
             except:
                 print("file not found or unexpected content")
+        elif path.endswith('json'):
+            with open('newdata.json') as json_file:
+                data = json.load(json_file) 
+                newItemsList=[]
+                jsvals=list(data)
+                for elem in jsvals:
+                    newItemsList.append(list(elem.values()))
+                self.addMultiple(newItemsList)
+
         else:
             print("unvalid file type")
