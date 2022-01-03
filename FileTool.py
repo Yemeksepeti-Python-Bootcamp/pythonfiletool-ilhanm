@@ -36,6 +36,7 @@ class FileTool:
         """
         Reads all rows of given file.
         """
+        print(f"FIELDS: {self.fields}")
         for id, element in self.elemDict.items():
             print(f"ID: {id} | {element}")
   
@@ -71,6 +72,7 @@ class FileTool:
         if(isinstance(elems,list)): #add new row by using list data type
             for newElement in elems:
                 self.addRow(newElement)
+            print("Items added successfully")
             self.saveChanges()
 
     def deleteRow(self,rowId=-1):
@@ -86,6 +88,7 @@ class FileTool:
             del self.elemDict[rowId]
             self.idList.pop(rowId)
         self.saveChanges()
+        print("Item deleted successfully")
 
     def updateByID(self,rowId: int, newElement):
         """
@@ -100,14 +103,15 @@ class FileTool:
         if(isinstance(newElement,list)): 
             self.elemDict[rowId]=newElement
             self.saveChanges()
+        print("Item updated successfully")
 
-    def saveChanges(self):
+    def saveChanges(self): #writes final version of list to the csv file 
         f=open(self.path,'w', newline='\n',encoding="UTF-8")
         _writer=csv.writer(f)
         _writer.writerow(self.fields)
         _writer.writerows(list(self.elemDict.values()))
 
-    def getMenu(self):
+    def Menu(self):
         
         mainMenu="""
         FILE OPERATIONS MENU
@@ -165,7 +169,7 @@ class FileTool:
         result=json.dumps(jsonResult,indent=4)
         with open("output.json", "w", encoding="utf8") as outfile:
             outfile.write(result)  
-        
+        print("Items saved to 'output.json' file.")
     def mergeAnotherFile(self,path :str):        
         
         if path.endswith('csv'):
@@ -175,15 +179,19 @@ class FileTool:
                 self.addMultiple(csv_reader)
                 print(f"{path} file successfully combined with {self.path}")
             except:
-                print("file not found or unexpected content")
+                print("file not found or content unmatched")
         elif path.endswith('json'):
-            with open('newdata.json') as json_file:
-                data = json.load(json_file) 
-                newItemsList=[]
-                jsvals=list(data)
-                for elem in jsvals:
-                    newItemsList.append(list(elem.values()))
-                self.addMultiple(newItemsList)
+            try:
+                with open('newdata.json') as json_file:
+                    data = json.load(json_file) 
+                    newItemsList=[]
+                    jsvals=list(data)
+                    for elem in jsvals:
+                        newItemsList.append(list(elem.values()))
+                    self.addMultiple(newItemsList)
+                    print(f"{path} file successfully combined with {self.path}")
+            except:
+                print("file not found or content unmatched")
 
         else:
             print("unvalid file type")

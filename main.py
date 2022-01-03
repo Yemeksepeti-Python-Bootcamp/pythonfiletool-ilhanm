@@ -8,4 +8,4 @@ myft=FileTool("products.csv",["name","price","quantity"])
 #myft.getAll()
 #myft.mergeAnotherFile("yeniUrunler.csv")
 
-myft.getMenu()
+myft.Menu()
